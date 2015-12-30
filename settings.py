@@ -1,0 +1,8 @@
+cmtdir = 'comments/'
+path_pos = 'haopingfenci.txt'
+path_neg = 'chapingfenci.txt'
+file_terms = 'terms.txt'
+file_trm_pos = 'trm_pos.txt'
+file_trm_neg = 'trm_neg.txt'
+file_IG = 'information_gain.txt'
+file_features = 'features.txt'
