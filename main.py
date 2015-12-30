@@ -11,6 +11,7 @@ path_neg = 'chapingfenci.txt'
 file_terms = 'terms.txt'
 file_trm_pos = 'trm_pos.txt'
 file_trm_neg = 'trm_neg.txt'
+file_IG = 'information_gain.txt'
 
 def _main_() :
 	cmt_pos = 0 # count of positive comment
@@ -155,7 +156,7 @@ def _main_() :
 		IGterms[i] = Htot - IGterms[i]
 		
 	# show the IG
-	f = open('information_gain.txt', 'w')
+	f = open(file_IG, 'w')
 	for i in IGterms :
 		f.write(str(i) + '\t')
 	f.close()
