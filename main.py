@@ -150,8 +150,8 @@ def _main_() :
 			math.log(pnterm_neg)/math.log(2)
 
 		# calculate information gain with or without terms[i]
-		IGterms[i] = -1.0*pterm*(Htrm_pos+Htrm_neg) \
-		- (1-pterm)*(Hntrm_pos+Hntrm_neg)
+		IGterms[i] = pterm*(Htrm_pos+Htrm_neg) + \
+		(1-pterm)*(Hntrm_pos+Hntrm_neg)
 		IGterms[i] = Htot - IGterms[i]
 		
 	# show the IG
