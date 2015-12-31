@@ -13,7 +13,8 @@ class BPNN(object) :
 			hidden[, hidden2, hidden3, ...] 
 			output
 			]
-		learning_rate = 0.5 by default
+		eta = 0.2 by default, eta is learning rate
+
 	Methods:
 		void rand_train(data, feedback, times) - data should have
 			dimension as input layer
@@ -24,9 +25,9 @@ class BPNN(object) :
 			predict the expected output
 	"""
 
-	def __init__(self, layers, learning_rate) :
-		self.layers = layers;
-		self.learning_rate = learning_rate;
+	def __init__(self, layers, eta) :
+		self.layers = layers
+		self.eta = eta
 		
 		# constructing the network
 		if len(self.layers)<3 :
@@ -37,34 +38,15 @@ class BPNN(object) :
 		self.hiddenLayerDim = self.layers[1:(len(layers)-1)]
 		
 		# allocate memory for connections
-		# input-hidden connections
-		self.ihc = np.arange(self.inputLayerDim)
-		for i in range(len(self.ihc)) :
-			self.ihc[i] = np.random.ranf(self.hiddenLayerDim[0])
-		# there could be situation if ihconn allocation failed.
-		
-		# hidden-output-connections
-		self.hoc = np.arange(\
-		self.hiddenLayerDim[len(self.hiddenLayerDim)-1])
-		for i in range(len(self.hoc)) :
-			self.hoc[i] = np.random.ranf(self.outputLayerDim)
-		
-		# connections between k to k+1 hidden layer
-		self.hhc = []
-		if len(self.hiddenLayerDim)>1 :
-			self.hhc = np.arange(len(self.hiddenLayerDim)-1)
-			for i in range(len(self.hiddenLayerDim)-1) :
-				self.hhc[i] = np.arange(self.hiddenLayerDim[i])
-				for j in range(len(self.hhc[i])) :
-					self.hhc[i][j] = \
-					np.random.ranf(self.hiddenLayerDim[i+1])
+		self.w = np.arange(len(self.layers)-1)
+		for i in range(len(self.w)) :
+			self.w[i] = np.random.ranf(\
+			size=[self.layers[i], self.layers[i+1]])
 		
 		# allocation for input and output for each layer
-		self.x = np.arange(len(self.layers)-1)
-		self.y = np.arange(len(self.outputLayerDim))
-		self.e = np.arange(len(self.outputLayerDim))
-		for i in range(len(self.x)) :
-			self.x[i] = np.arange(len(self.layers[i]))
+		self.x = np.arange(len(self.layers)) # input and output
+		self.d = np.arange(len(self.layers)) # adjustment
+		self.e = []
 		# over!
 	
 	def rand_train(data, feedback, times) :
@@ -78,11 +60,58 @@ class BPNN(object) :
 		if len(feedback) != len(data) :
 			print 'FEEDBACK DIMENSION DOES NOT MATCH WITH INPUT!\
 			PROGRAM EXIT WITH ERROR!'
-		train_order = np.random.randint(len(data), times)
+		train_order = np.random.randint(len(data), size=times)
 		for i in train_order :
-			del self.x[0]
-			self.x[0] = data[train_order[i]]
+			# input
+			self.x[0] = np.array(data[i])
+			
+			# forward computing
+			for k in range(1, len(self.x)) :
+				self.x[k] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+			
+			# compute error
+			self.e = self.x[len(self.x)-1] - np.array(feedback[i])
+			if self.e.dot(self.e) < max_err*max_err :
+				print 'BPNN TRAINING DONE.'
+				return
 
+			# back propagation
+			# get last layer adjustment
+			self.d[len(self.d)-1] = self.x[len(self.x)-1]*\
+			(1-self.x[len(self.x)-1])*\
+			(self.x[len(self.x)-1]-feedback[i])
+			self.w[len(self.w)-1] = \
+			self.w[len(self.w)-1] - self.eta*\
+			self.d[len(self.d)-1].dot(self.x[len(self.x)-2])
 
+			# get each layer adjustment
+			k = len(self.d)-2
+			while k > 0 :
+				self.d[k] = self.x[k]*(1-self.x[k])*\
+				np.sum(self.w[k]*self.d[k+1], axis=1)
+				# adjust weight matrix of each layer
+				self.w[k-1] = self.w[k-1] - self.eta*\
+				self.d[k].dot(self.x[k-1])
+				k = k-1
 
+		# TRAINING OVER
+		print 'TRAINING OVER, BUT DID NOT REACH MAX_ERR.'
+	
+	def apply(data) :
+		# prepare for returned result
+		ret = np.zeros([len(data), self.outputLayerDim])
+
+		if len(data[0]) != self.inputLayerDim :
+			print 'TRAINING INPUT DIMENSION DOES NOT \
+			MATCH WITH INPUT LAYER! PROGRAM EXIT WITH ERROR!'
+			return
+		for i in range(len(data)) :
+			self.x[0] = np.array(data[i])
+			
+			# forward computing
+			for k in range(1, len(self.x)) :
+				self.x[k] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+			ret[i][:] = self.x[len(self.x)-1]
+
+		return ret
 
