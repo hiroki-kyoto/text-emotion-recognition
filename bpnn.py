@@ -2,8 +2,9 @@
 import numpy as np
 
 # define the nonlinear method sigmoid function
-sigmoid = np.vectorize(lambda(x): 1.0/1.0+exp(-x))
+sigmoid = np.vectorize(lambda(x): 1.0/1.0+np.exp(-x))
 grad_sigmoid = np.vectorize(lambda(x): sigmoid(x)*(1-sigmoid(x)))
+max_err = 0.1
 
 class BPNN(object) :
 	"""Back Propagation Neural Network 
@@ -38,18 +39,18 @@ class BPNN(object) :
 		self.hiddenLayerDim = self.layers[1:(len(layers)-1)]
 		
 		# allocate memory for connections
-		self.w = np.arange(len(self.layers)-1)
+		self.w = range(len(self.layers)-1)
 		for i in range(len(self.w)) :
 			self.w[i] = np.random.ranf(\
 			size=[self.layers[i], self.layers[i+1]])
 		
 		# allocation for input and output for each layer
-		self.x = np.arange(len(self.layers)) # input and output
-		self.d = np.arange(len(self.layers)) # adjustment
+		self.x = range(len(self.layers)) # input and output
+		self.d = range(len(self.layers)) # adjustment
 		self.e = []
 		# over!
 	
-	def rand_train(data, feedback, times) :
+	def rand_train(self, data, feedback, times) :
 		if len(data[0]) != self.inputLayerDim :
 			print 'TRAINING INPUT DIMENSION DOES NOT \
 			MATCH WITH INPUT LAYER! PROGRAM EXIT WITH ERROR!'
@@ -97,7 +98,7 @@ class BPNN(object) :
 		# TRAINING OVER
 		print 'TRAINING OVER, BUT DID NOT REACH MAX_ERR.'
 	
-	def apply(data) :
+	def apply(self, data) :
 		# prepare for returned result
 		ret = np.zeros([len(data), self.outputLayerDim])
 

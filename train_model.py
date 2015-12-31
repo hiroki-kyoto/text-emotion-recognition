@@ -55,11 +55,8 @@ def _main_() :
 		feedback[count][0] = 0
 		count += 1
 
-	model = BPNN(\
-	[len(data[0]), 2*len(data[0]), len(data[0]), 1],\
-	0.3
-	)
-	model.rand_train(data, feedback)
+	model = BPNN([len(data[0]),2*len(data[0]),len(data[0]),1],0.3)
+	model.rand_train(data, feedback, 10)
 
 	# save weight data into files
 
