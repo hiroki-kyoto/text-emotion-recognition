@@ -2,7 +2,7 @@
 import numpy as np
 
 # define the nonlinear method sigmoid function
-sigmoid = np.vectorize(lambda(x): 1.0/1.0+exp(-x)))
+sigmoid = np.vectorize(lambda(x): 1.0/1.0+exp(-x))
 grad_sigmoid = np.vectorize(lambda(x): sigmoid(x)*(1-sigmoid(x)))
 
 class BPNN(object) :
