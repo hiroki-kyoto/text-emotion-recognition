@@ -118,15 +118,19 @@ class BPNN(object) :
 			print 'TRAINING INPUT DIMENSION DOES NOT \
 			MATCH WITH INPUT LAYER! PROGRAM EXIT WITH ERROR!'
 			return
-
-		x[0] = np.zeros([1, self.layers[0]])
+		# input
+		self.x[0] = np.zeros([1,self.layers[0]])
 		for i in range(len(data)) :
-			self.x[0][0] = np.array(data[i])
-			
+			self.x[0][0] = data[i]
+			# unifying the input
+			xsum = np.sum(self.x[0])
+			self.x[0] = self.x[0]/xsum
+		
 			# forward computing
 			for k in range(1, len(self.x)) :
 				self.x[k] = np.zeros([1, self.layers[k]])
-				self.x[k][0][:] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+				self.x[k][0] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+			
 			ret[i][:] = self.x[len(self.x)-1]
 
 		return ret
