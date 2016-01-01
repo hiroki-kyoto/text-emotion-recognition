@@ -2,9 +2,8 @@
 import numpy as np
 
 # define the nonlinear method sigmoid function
-sigmoid = np.vectorize(lambda(x): 1.0/1.0+np.exp(-x))
+sigmoid = np.vectorize(lambda(x): 1.0/(1.0+np.exp(-x)))
 grad_sigmoid = np.vectorize(lambda(x): sigmoid(x)*(1-sigmoid(x)))
-max_err = 0.1
 
 class BPNN(object) :
 	"""Back Propagation Neural Network 
@@ -43,11 +42,15 @@ class BPNN(object) :
 		for i in range(len(self.w)) :
 			self.w[i] = np.random.ranf(\
 			size=[self.layers[i], self.layers[i+1]])
+			wsum = np.sum(self.w[i])
+			self.w[i] = self.w[i]/wsum
 		
 		# allocation for input and output for each layer
 		self.x = range(len(self.layers)) # input and output
 		self.d = range(len(self.layers)) # adjustment
 		self.e = []
+		self.esum = 0.0
+		self.time = 0
 		# over!
 	
 	def rand_train(self, data, feedback, times) :
@@ -62,28 +65,37 @@ class BPNN(object) :
 			print 'FEEDBACK DIMENSION DOES NOT MATCH WITH INPUT!\
 			PROGRAM EXIT WITH ERROR!'
 		train_order = np.random.randint(len(data), size=times)
+		self.x[0] = np.zeros([1,self.layers[0]])
+
 		for i in train_order :
 			# input
-			self.x[0] = np.array(data[i])
+			self.x[0][0] = data[i]
+			# unifying the input
+			xsum = np.sum(self.x[0])
+			self.x[0] = self.x[0]/xsum
 			
 			# forward computing
 			for k in range(1, len(self.x)) :
-				self.x[k] = sigmoid(self.x[k-1].dot(self.w[k-1]))
-			
+				self.x[k] = np.zeros([1, self.layers[k]])
+				self.x[k][0] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+
 			# compute error
-			self.e = self.x[len(self.x)-1] - np.array(feedback[i])
-			if self.e.dot(self.e) < max_err*max_err :
-				print 'BPNN TRAINING DONE.'
-				return
+			y = np.zeros([1,len(feedback[0])])
+			y[0] = feedback[i]
+			self.e = self.x[len(self.x)-1] - y
+			self.esum += np.sqrt(np.sum(self.e*self.e))
+			self.time += 1
+			print 'mean, error: ', self.esum/self.time
 
 			# back propagation
 			# get last layer adjustment
 			self.d[len(self.d)-1] = self.x[len(self.x)-1]*\
 			(1-self.x[len(self.x)-1])*\
-			(self.x[len(self.x)-1]-feedback[i])
+			(self.x[len(self.x)-1]-y)
 			self.w[len(self.w)-1] = \
 			self.w[len(self.w)-1] - self.eta*\
-			self.d[len(self.d)-1].dot(self.x[len(self.x)-2])
+			np.dot(np.array(zip(*(self.x[len(self.x)-2]))), \
+			self.d[len(self.d)-1])
 
 			# get each layer adjustment
 			k = len(self.d)-2
@@ -92,11 +104,11 @@ class BPNN(object) :
 				np.sum(self.w[k]*self.d[k+1], axis=1)
 				# adjust weight matrix of each layer
 				self.w[k-1] = self.w[k-1] - self.eta*\
-				self.d[k].dot(self.x[k-1])
+				np.dot(np.array(zip(*(self.x[k-1]))), self.d[k])
 				k = k-1
 
 		# TRAINING OVER
-		print 'TRAINING OVER, BUT DID NOT REACH MAX_ERR.'
+		print 'TRAINING OVER'
 	
 	def apply(self, data) :
 		# prepare for returned result
@@ -106,12 +118,15 @@ class BPNN(object) :
 			print 'TRAINING INPUT DIMENSION DOES NOT \
 			MATCH WITH INPUT LAYER! PROGRAM EXIT WITH ERROR!'
 			return
+
+		x[0] = np.zeros([1, self.layers[0]])
 		for i in range(len(data)) :
-			self.x[0] = np.array(data[i])
+			self.x[0][0] = np.array(data[i])
 			
 			# forward computing
 			for k in range(1, len(self.x)) :
-				self.x[k] = sigmoid(self.x[k-1].dot(self.w[k-1]))
+				self.x[k] = np.zeros([1, self.layers[k]])
+				self.x[k][0][:] = sigmoid(self.x[k-1].dot(self.w[k-1]))
 			ret[i][:] = self.x[len(self.x)-1]
 
 		return ret

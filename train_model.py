@@ -38,27 +38,34 @@ def _main_() :
 	for i in train_pos_cmts :
 		terms = i.split('\t')
 		for k in range(len(features)) :
-			data[count][k] = 0
+			data[count][k] = 0.1
 			for term in terms :
 				if features[k] == term :
-					data[count][k] = 1
-		feedback[count][0] = 1
+					data[count][k] = 0.9
+		feedback[count][0] = 0.9
 		count += 1
 	
 	for i in train_neg_cmts :
 		terms = i.split('\t')
 		for k in range(len(features)) :
-			data[count][k] = 0
+			data[count][k] = 0.1
 			for term in terms :
 				if features[k] == term :
-					data[count][k] = 1
-		feedback[count][0] = 0
+					data[count][k] = 0.9
+		feedback[count][0] = 0.1
 		count += 1
 
-	model = BPNN([len(data[0]),2*len(data[0]),len(data[0]),1],0.3)
-	model.rand_train(data, feedback, 10)
+	model = BPNN([len(data[0]), len(data[0])/2, 1], 0.3)
+	model.rand_train(data, feedback, 10000)
 
-	# save weight data into files
+	# save weight data into file
+	f = open(file_weight, 'w')
+	for i in range(len(model.w)) :
+		mat = model.w[i]
+		for m in range(len(mat)) :
+			for n in range(len(mat[0])) :
+				f.write(str(mat[m][n]) + '\t')
+	f.close()
 
 _main_()
 
