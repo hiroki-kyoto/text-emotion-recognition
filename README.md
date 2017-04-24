@@ -2,14 +2,26 @@
 Using Information Gain to decide which words are keywords to determine the emotion of text. 
 There's an application of comments classification.
 A.算法特点：
+
+
 1.以信息增益大小为标准提取文本特征
+
+
 【背景】
+
+
 【参考网址：http://hxraid.iteye.com/blog/767364】
+
+
 (1) 信息量是如何度量的 —— 信息熵 Entropy
+
+
 因此先回忆一下信息论中有关信熵 的定义。说有这么一个变量X，它可能的取值有n多种，
 分别是x1 ，x2 ，……，xn ，每一种取到的概率分别是P1 ，P2 ，……，Pn ，那么X的熵就
-定义为：
+定义为：\
+
 	H(x) = -SUM(P(i)*log2(P(i)))
+
 
 (2) 在分类领域中，信息熵和信息增益的使用
 对分类系统来说，类别C是变量，它可能的取值是C1 ，C2 ，……，Cn ，而每一个类别出现
